@@ -4,35 +4,37 @@ import { useChatStore } from "../store/useChatStore";
 import { useAuthStore } from "../store/useAuthStore";
 
 export default function Sidebar() {
-  const { getUsers, users, getMessages, messages, getRecentChats } = useChatStore();
+  const { users, getRecentChats, selectedUser, setSelectedUser } = useChatStore();
   const { onlineUsers } = useAuthStore();
   const [searchTerm, setSearchTerm] = useState("");
   const [recentChats, setRecentChats] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
+
+  useEffect(() => {
+    const fetchRecentChats = async () => {
+      try {
+        const recentChatsData = await getRecentChats();
+        setRecentChats(recentChatsData);
+
+        const nonChatUsers = users.filter(
+          (user) =>
+            !recentChatsData.some((chat) => chat._id === user._id) &&
+            user.fullName.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        setFilteredUsers(nonChatUsers);
+      } catch (error) {
+        console.error("Error fetching recent chats:", error);
+      }
+    };
+
+    if (users.length > 0) {
+      fetchRecentChats();
+    }
+  }, [getRecentChats, users, searchTerm]);
 
   const onlineUserDetails = onlineUsers
     .map((id) => users.find((user) => user._id === id))
     .filter((user) => user);
-
-  useEffect(() => {
-    getUsers();
-    getMessages(),
-    getRecentChats()
-  }, [getUsers, getMessages, getRecentChats]);
-
-  useEffect(() => {
-    const updatedRecentChats = users.filter((user) =>
-      messages.some(
-        (msg) =>
-          (msg.senderId === user._id || msg.receiverId === user._id) &&
-          msg.text
-      )
-    );
-    setRecentChats(updatedRecentChats);
-  }, [users, messages]);
-
-  const filteredUsers = users.filter((user) =>
-    user.fullName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   return (
     <div className="w-80 bg-[#303841] text-white flex flex-col p-5">
@@ -54,9 +56,9 @@ export default function Sidebar() {
       {onlineUserDetails.length > 0 && (
         <div className="mb-4">
           <div className="overflow-x-auto flex space-x-4">
-            {onlineUserDetails.map((user, index) => (
+            {onlineUserDetails.map((user) => (
               <div
-                key={index}
+                key={user._id}
                 className="flex flex-col items-center justify-center bg-gray-700 rounded-md px-3 py-1"
               >
                 <div className="relative">
@@ -77,30 +79,23 @@ export default function Sidebar() {
       )}
 
       <h2 className="font-semibold text-lg mb-2">Recent Chats</h2>
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden">
         {recentChats.length > 0 ? (
-          recentChats.map((user) => (
+          recentChats.map((chat) => (
             <div
-              key={user._id}
+              key={chat._id}
               className="flex items-center p-3 hover:bg-gray-700 cursor-pointer"
+              onClick={() => setSelectedUser(chat)}
             >
               <img
-                src={user.profilePic}
-                alt={user.fullName}
+                src={chat.profilePic}
+                alt={chat.fullName}
                 className="w-10 h-10 rounded-full mr-3"
               />
               <div className="flex-1">
-                <h3 className="font-medium">{user.fullName}</h3>
+                <h3 className="font-medium truncate">{chat.fullName}</h3>
                 <p className="text-sm text-gray-500 truncate">
-                  Last message:{" "}
-                  {messages
-                    .filter(
-                      (msg) =>
-                        msg.senderId === user._id ||
-                        msg.receiverId === user._id
-                    )
-                    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0]
-                    ?.text || "No messages"}
+                  {chat.lastMessage || "No messages"}
                 </p>
               </div>
             </div>

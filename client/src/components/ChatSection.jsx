@@ -4,7 +4,7 @@ import { useAuthStore } from "../store/useAuthStore";
 import { formatMessageTime } from "../lib/utils";
 import MessageInput from "./MessageInput";
 
-function Message({ isSender, text, avatarSrc, createdAt }) {
+function Message({ isSender, text, imageSrc, avatarSrc, createdAt }) {
     return (
         <div className={`flex mb-4 cursor-pointer ${isSender ? "justify-end" : ""}`}>
             {!isSender && (
@@ -17,6 +17,13 @@ function Message({ isSender, text, avatarSrc, createdAt }) {
                     } rounded-lg p-3 text-white`}
             >
                 {text && <p className="mb-1">{text}</p>}
+                {imageSrc && (
+                    <img
+                        src={imageSrc}
+                        alt="Message Attachment"
+                        className="rounded-lg mt-2 max-w-full"
+                    />
+                )}
                 <time className="text-xs opacity-50 text-right">
                     {formatMessageTime(createdAt)}
                 </time>
@@ -94,6 +101,7 @@ function ChatSection() {
                         key={msg._id}
                         isSender={msg.senderId === authUser._id}
                         text={msg.text}
+                        imageSrc={msg.image}
                         avatarSrc={
                             msg.senderId === authUser._id
                                 ? authUser.profilePic

@@ -73,7 +73,6 @@ export const useAuthStore = create((set, get) => ({
 
   logout: async () => {
     try {
-      await axios.post(`${BACKEND_URL}/api/auth/logout`);
       localStorage.removeItem("token");
       set({ authUser: null });
       toast.success("Logged out successfully");

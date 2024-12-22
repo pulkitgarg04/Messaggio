@@ -60,7 +60,7 @@ function ContactsSidebar() {
                 {filteredUsers[letter].map((user) => (
                   <li
                     key={user._id}
-                    onClick={() => setSelectedUser(user)}
+                    c
                     className={`flex gap-5 items-center mb-5 cursor-pointer ${selectedUser?._id === user._id
                         ? "bg-gray-600 rounded-md p-2"
                         : ""

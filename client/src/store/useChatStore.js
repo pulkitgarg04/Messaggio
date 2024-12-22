@@ -18,7 +18,7 @@ export const useChatStore = create((set, get) => ({
       const res = await axios.get(`${BACKEND_URL}/api/messages/recent-chats`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      set({ recentChats: res.data });
+      return res.data;
     } catch (error) {
       toast.error(error.response?.data?.message || "Error fetching recent chats");
     }

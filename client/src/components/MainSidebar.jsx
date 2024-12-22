@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import { MessageSquare, Users, MessageSquareDot, ContactRound } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
 
 function MainSidebar() {
     const [selectedChat, setSelectedChat] = useState("Chats");
     const [isLogoutMenuOpen, setLogoutMenuOpen] = useState(false);
     const logoutMenuRef = useRef(null);
-    const { authUser } = useAuthStore();
+    const { authUser, logout } = useAuthStore();
+    const navigate = useNavigate();
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -21,6 +22,15 @@ function MainSidebar() {
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, []);
+
+    const handleLogout = async () => {
+        try {
+            await logout();
+            navigate("/login");
+        } catch (error) {
+            console.error("Error during logout:", error);
+        }
+    };
 
     return (
         <div className="w-20 bg-[#36404A] text-white flex flex-col justify-between py-6 items-center z-10">
@@ -91,28 +101,19 @@ function MainSidebar() {
                     <div className="absolute bottom-0 left-14 bg-gray-800 text-white rounded-md shadow-lg w-28">
                         <button
                             className="block w-full text-left px-4 py-2 hover:bg-gray-700"
-                            onClick={() => {
-                                console.log("Logging out...");
-                                setLogoutMenuOpen(false);
-                            }}
+                            onClick={() => setLogoutMenuOpen(false)}
                         >
                             Profile
                         </button>
                         <button
                             className="block w-full text-left px-4 py-2 hover:bg-gray-700"
-                            onClick={() => {
-                                console.log("Logging out...");
-                                setLogoutMenuOpen(false);
-                            }}
+                            onClick={() => setLogoutMenuOpen(false)}
                         >
                             Settings
                         </button>
                         <button
                             className="block w-full text-left px-4 py-2 hover:bg-gray-700"
-                            onClick={() => {
-                                console.log("Logging out...");
-                                setLogoutMenuOpen(false);
-                            }}
+                            onClick={handleLogout}
                         >
                             Logout
                         </button>
