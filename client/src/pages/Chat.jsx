@@ -1,16 +1,17 @@
-import { useState } from "react";
 import MainSidebar from "../components/MainSidebar";
 import ChatSidebar from "../components/ChatSidebar";
 import ChatSection from "../components/ChatSection";
+import NoChatSelected from "../components/NoChatSelected";
+import { useChatStore } from "../store/useChatStore";
 
 const ChatApp = () => {
-  const [selectedChat, setSelectedChat] = useState("Chats");
+  const { selectedUser } = useChatStore();
 
   return (
     <div className="h-screen flex bg-gray-100 font-Poppins">
       <MainSidebar />
       <ChatSidebar />
-      <ChatSection />
+      {!selectedUser ? <NoChatSelected /> : <ChatSection />}
     </div>
   );
 };

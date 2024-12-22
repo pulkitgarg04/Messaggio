@@ -87,11 +87,15 @@ export const useAuthStore = create((set, get) => ({
   updateProfile: async (data) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.put(`${BACKEND_URL}/api/auth/update-profile`, data, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await axios.put(
+        `${BACKEND_URL}/api/auth/update-profile`,
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       set({ authUser: res.data });
       toast.success("Profile updated successfully");
     } catch (error) {

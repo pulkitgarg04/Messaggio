@@ -12,6 +12,18 @@ export const useChatStore = create((set, get) => ({
   isUsersLoading: false,
   isMessagesLoading: false,
 
+  getRecentChats: async () => {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await axios.get(`${BACKEND_URL}/api/messages/recent-chats`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      set({ recentChats: res.data });
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Error fetching recent chats");
+    }
+  },  
+
   getUsers: async () => {
     set({ isUsersLoading: true });
     const token = localStorage.getItem("token");
@@ -42,7 +54,7 @@ export const useChatStore = create((set, get) => ({
     }
   },
 
-  sendMessages: async (message) => {
+  sendMessage: async (messageData) => {
     const { selectedUser, messages } = get();
     if (!selectedUser) {
       toast.error("No user selected");
@@ -52,7 +64,7 @@ export const useChatStore = create((set, get) => ({
     try {
       const res = await axios.post(
         `${BACKEND_URL}/api/messages/send/${selectedUser._id}`,
-        { text: message },
+        messageData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       set({ messages: [...messages, res.data] });
@@ -64,15 +76,20 @@ export const useChatStore = create((set, get) => ({
   subscribeToMessages: () => {
     const { selectedUser } = get();
     if (!selectedUser) return;
+
     const socket = useAuthStore.getState().socket;
     if (!socket) {
       toast.error("Socket not initialized");
       return;
     }
+
     socket.on("newMessage", (newMessage) => {
-      if (newMessage.senderId === selectedUser._id) {
-        set({ messages: [...get().messages, newMessage] });
-      }
+      const isMessageSentFromSelectedUser = newMessage.senderId === selectedUser._id;
+      if (!isMessageSentFromSelectedUser) return;
+
+      set({
+        messages: [...get().messages, newMessage],
+      });
     });
   },
 
@@ -83,8 +100,5 @@ export const useChatStore = create((set, get) => ({
     }
   },
 
-  setSelectedUser: (user) => {
-    set({ selectedUser: user, messages: [] });
-    get().getMessages(user._id);
-  },
+  setSelectedUser: (selectedUser) => set({ selectedUser }),
 }));

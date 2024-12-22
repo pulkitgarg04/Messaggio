@@ -4,28 +4,34 @@ import { useChatStore } from "../store/useChatStore";
 import { useAuthStore } from "../store/useAuthStore";
 
 export default function Sidebar() {
-  const { getUsers, users, getMessages, messages } = useChatStore();
+  const { getUsers, users, getMessages, messages, getRecentChats } = useChatStore();
   const { onlineUsers } = useAuthStore();
   const [searchTerm, setSearchTerm] = useState("");
+  const [recentChats, setRecentChats] = useState([]);
 
   const onlineUserDetails = onlineUsers
-  .map((id) => users.find((user) => user._id === id))
-  .filter((user) => user);
+    .map((id) => users.find((user) => user._id === id))
+    .filter((user) => user);
 
   useEffect(() => {
     getUsers();
-  }, [getUsers]);
+    getMessages(),
+    getRecentChats()
+  }, [getUsers, getMessages, getRecentChats]);
+
+  useEffect(() => {
+    const updatedRecentChats = users.filter((user) =>
+      messages.some(
+        (msg) =>
+          (msg.senderId === user._id || msg.receiverId === user._id) &&
+          msg.text
+      )
+    );
+    setRecentChats(updatedRecentChats);
+  }, [users, messages]);
 
   const filteredUsers = users.filter((user) =>
     user.fullName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const recentChats = users.filter((user) =>
-    messages.some(
-      (msg) =>
-        (msg.senderId === user._id || msg.receiverId === user._id) &&
-        msg.text
-    )
   );
 
   return (
@@ -61,7 +67,9 @@ export default function Sidebar() {
                   />
                   <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-gray-800 rounded-full"></div>
                 </div>
-                <p className="text-sm mt-2 truncate">{user.fullName.split(' ')[0]}</p>
+                <p className="text-sm mt-2 truncate">
+                  {user.fullName.split(" ")[0]}
+                </p>
               </div>
             ))}
           </div>
@@ -84,11 +92,15 @@ export default function Sidebar() {
               <div className="flex-1">
                 <h3 className="font-medium">{user.fullName}</h3>
                 <p className="text-sm text-gray-500 truncate">
-                  Last message: {messages.find(
-                    (msg) =>
-                      msg.senderId === user._id ||
-                      msg.receiverId === user._id
-                  )?.text || "No messages"}
+                  Last message:{" "}
+                  {messages
+                    .filter(
+                      (msg) =>
+                        msg.senderId === user._id ||
+                        msg.receiverId === user._id
+                    )
+                    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0]
+                    ?.text || "No messages"}
                 </p>
               </div>
             </div>
