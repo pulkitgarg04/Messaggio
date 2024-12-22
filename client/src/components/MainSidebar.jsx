@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { MessageSquare, Users, MessageSquareDot, ContactRound } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuthStore } from "../store/useAuthStore";
 
 function MainSidebar() {
     const [selectedChat, setSelectedChat] = useState("Chats");
     const [isLogoutMenuOpen, setLogoutMenuOpen] = useState(false);
     const logoutMenuRef = useRef(null);
+    const { authUser } = useAuthStore();
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -21,7 +23,7 @@ function MainSidebar() {
     }, []);
 
     return (
-        <div className="w-20 bg-[#36404A] text-white flex flex-col justify-between py-6 items-center">
+        <div className="w-20 bg-[#36404A] text-white flex flex-col justify-between py-6 items-center z-10">
             <div className="w-10 h-10 rounded-xl bg-indigo-500 flex items-center justify-center mb-4">
                 <MessageSquareDot className="text-indigo-100" size={28} />
             </div>
@@ -79,7 +81,7 @@ function MainSidebar() {
                     onClick={() => setLogoutMenuOpen(!isLogoutMenuOpen)}
                 >
                     <img
-                        src="https://avatar.iran.liara.run/public"
+                        src={authUser.profilePic || "https://avatar.iran.liara.run/public"}
                         alt="avatar"
                         className="rounded-full"
                     />
